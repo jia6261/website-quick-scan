@@ -9,11 +9,14 @@
 - 从 `https://trbo.jiagar.us.kg/sitemap.xml` 自动读取全部 URL
 - 并发检查所有页面，优先使用 `HEAD`，失败后自动使用轻量 `GET`
 - 在 Actions Summary 中生成逐 URL 状态表
+- 每次扫描后创建一个带 UTC 时间戳的 GitHub Release，并上传当次 `sitemap.xml`
 - 任意 URL 返回非 `2xx/3xx` 或请求失败时，workflow 标记为失败
 
 ## 手动运行
 
 进入 **Actions → Website quick scan → Run workflow**。
+
+每次运行完成后，可在仓库的 **Releases** 页面下载对应的 sitemap 快照。即使扫描发现坏链，也会先发布 sitemap，再将 workflow 标记为失败。
 
 ## 本地运行
 

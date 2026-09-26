@@ -6,7 +6,11 @@ on:
     - cron: "*/15 * * * *"
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: website-quick-scan
+  cancel-in-progress: false
 
 jobs:
   scan:
@@ -16,8 +20,25 @@ jobs:
     steps:
       - name: Checkout scanner
         uses: actions/checkout@v4
+      - name: Download current sitemap
+        run: curl --fail --silent --show-error --location https://trbo.jiagar.us.kg/sitemap.xml --output sitemap.xml
       - name: Run scanner
+        id: scan
+        continue-on-error: true
         env:
           SITEMAP_URL: https://trbo.jiagar.us.kg/sitemap.xml
         run: |
           python3 scan.py
+      - name: Publish sitemap release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="scan-$(date -u +%Y%m%dT%H%M%SZ)"
+          gh release create "$TAG" sitemap.xml \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Website scan $TAG" \
+            --notes "Automated sitemap snapshot from website quick scan workflow.\n\nScan run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+      - name: Fail if website scan failed
+        if: steps.scan.outcome != 'success'
+        run: exit 1
