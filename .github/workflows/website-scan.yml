@@ -3,10 +3,12 @@ name: Website quick scan
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "0 0 */2 * *"
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: website-quick-scan
@@ -21,7 +23,11 @@ jobs:
       - name: Checkout scanner
         uses: actions/checkout@v5
       - name: Download current sitemap
-        run: curl --fail --silent --show-error --location https://trbo.jiagar.us.kg/sitemap.xml --output sitemap.xml
+        run: |
+          mkdir -p site
+          curl --fail --silent --show-error --location https://trbo.jiagar.us.kg/sitemap.xml --output sitemap.xml
+          cp sitemap.xml site/sitemap.xml
+          cp sitemap.xml site/sitemap
       - name: Run scanner
         id: scan
         continue-on-error: true
@@ -29,6 +35,18 @@ jobs:
           SITEMAP_URL: https://trbo.jiagar.us.kg/sitemap.xml
         run: |
           python3 scan.py
+      - name: Configure Pages
+        if: always()
+        uses: actions/configure-pages@v5
+      - name: Upload sitemap Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - name: Deploy sitemap to GitHub Pages
+        if: always()
+        id: deployment
+        uses: actions/deploy-pages@v4
       - name: Publish sitemap release
         if: always()
         env:
