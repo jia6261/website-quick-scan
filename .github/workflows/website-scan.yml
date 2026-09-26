@@ -15,11 +15,11 @@ concurrency:
 jobs:
   scan:
     name: Check sitemap URLs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Checkout scanner
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Download current sitemap
         run: curl --fail --silent --show-error --location https://trbo.jiagar.us.kg/sitemap.xml --output sitemap.xml
       - name: Run scanner
