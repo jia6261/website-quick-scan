@@ -1,0 +1,23 @@
+name: Website quick scan
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Check sitemap URLs
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout scanner
+        uses: actions/checkout@v4
+      - name: Run scanner
+        env:
+          SITEMAP_URL: https://trbo.jiagar.us.kg/sitemap.xml
+        run: |
+          python3 scan.py
